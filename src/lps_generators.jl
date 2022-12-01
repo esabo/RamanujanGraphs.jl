@@ -58,6 +58,34 @@ generator(a₀, a₁, a₂, a₃, i) = [
     -a₂ + i * a₃ a₀ - i * a₁
 ]
 
+#----------------added/altered------------------
+#this was changed to take 2 params
+generator(a₀, a₁, a₂, a₃, x, y) = [
+    a₀ + x * a₁ + a₃ * y a₂ + x * a₃ - a₁ * y
+    -a₂ + x * a₃ - a₁ * y a₀ - x * a₁ - y * a₃
+]
+
+#--------------added/altered------------------
+#-------returns x,y such that x^2+y^2+1=0 mod q
+#--------handles typical/old case with y=0
+function get_roots(p::Integer, q::Integer)
+    if p % 4 == 1 && q % 4 == 1
+        x = sqrt(GF{q}(q - 1))
+        y = 0
+    else
+        for x in 1:q
+            for y in 1:q
+                if (x * x + y * y + 1) % q == 0
+                    return x, y
+                end
+            end
+        end
+        # x = 1
+        # y = sqrt(GF{q}(q - 2))
+    end
+    return x, y
+end
+
 function PGLtype(p::Integer, q::Integer)
     legendre = legendresymbol(p, q)
 
@@ -76,12 +104,16 @@ function lps_generators(p::Integer, q::Integer)
     @assert p ≠ q
     @assert isprime(p)
     @assert isprime(q)
-    @assert p % 4 == 1
-    @assert q % 4 == 1
+    # @assert p % 4 == 1
+    # @assert q % 4 == 1
 
-    i = sqrt(GF{q}(q - 1))
-
-    mats = [generator(a₀, a₁, a₂, a₃, i) for (a₀, a₁, a₂, a₃) in quadruples(p)]
+    if p % 4 == 1 && q % 4 == 1
+        i = sqrt(GF{q}(q - 1))
+        mats = [generator(a₀, a₁, a₂, a₃, i) for (a₀, a₁, a₂, a₃) in quadruples(p)]
+    else
+        x, y = get_roots(p, q)
+        mats = [generator(a₀, a₁, a₂, a₃, x, y) for (a₀, a₁, a₂, a₃) in quadruples(p)]
+    end
 
     GL_t = PGLtype(p, q)
     S = GL_t.(mats)
