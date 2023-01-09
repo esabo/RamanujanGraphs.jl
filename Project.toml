@@ -1,7 +1,7 @@
 name = "RamanujanGraphs"
 uuid = "e7bd6bc6-b6b8-11e9-1ec2-2f89442c0d6c"
 authors = ["Marek Kaluba <kalmar@amu.edu.pl>, Eric Sabo"]
-version = "0.5"
+version = "0.5.0"
 
 [deps]
 Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
@@ -13,3 +13,4 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["Test"]
+
