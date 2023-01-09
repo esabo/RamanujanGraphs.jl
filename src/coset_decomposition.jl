@@ -12,6 +12,7 @@ function Base.getindex(cd::CosetDecomposition, i::Integer)
     i < 0 && return cd.inv_representatives[-i]
     return cd.representatives[i]
 end
+
 """
     CosetDecomposition(G, H)
 Decomposes `G` into __right__ cosets of `H`, usually written `H\\G`.
@@ -40,9 +41,8 @@ function CosetDecomposition(group, subgroup)
 
     i = 1
     cosets_found = 1
-
     for g in group
-        any(g * coset_reps_inv[i] ∈ subgroup for i = 1:cosets_found) && continue
+        any(g * coset_reps_inv[i] ∈ subgroup for i in 1:cosets_found) && continue
         cosets_found += 1
         push!(coset_reps, g)
         push!(coset_reps_inv, inv(g))
@@ -69,16 +69,11 @@ function right_action(x::AbstractGL₂, cd::CosetDecomposition)
     return perm
 end
 
-function right_action!(
-    perm::AbstractVector{<:Integer},
-    g::AbstractGL₂,
-    cosets::CosetDecomposition,
-)
-
+function right_action!(perm::AbstractVector{<:Integer}, g::AbstractGL₂, cosets::CosetDecomposition)
     # i → j when
     # Hc_i*g = Hc_j, i.e. c_i*g*c_j^-1 ∈ B
 
-    for i = 1:length(cosets)
+    for i in 1:length(cosets)
         cig = cosets[i] * g
         for j = 1:length(cosets)
             if cig * cosets[-j] ∈ cosets.trivial_coset

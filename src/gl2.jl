@@ -3,9 +3,9 @@ abstract type AbstractGL₂{q} <: AbstractMatrix{GF} end
 Base.size(::AbstractGL₂) = (2, 2)
 Base.length(::AbstractGL₂) = 4
 
-Base.one(::Type{T}) where {T<:AbstractGL₂} = T(1, 0, 0, 1)
-Base.one(::T) where {T<:AbstractGL₂} = one(T)
-Base.similar(::T) where {T<:AbstractGL₂} = one(T)
+Base.one(::Type{T}) where {T <: AbstractGL₂} = T(1, 0, 0, 1)
+Base.one(::T) where {T <: AbstractGL₂} = one(T)
+Base.similar(::T) where {T <: AbstractGL₂} = one(T)
 
 Base.IndexStyle(::AbstractGL₂) = IndexLinear()
 
@@ -35,26 +35,26 @@ ints(m::AbstractGL₂) = int(m[1]), int(m[2]), int(m[3]), int(m[4])
 characteristic(::Type{<:AbstractGL₂{q}}) where {q} = q
 characteristic(m::AbstractGL₂{q}) where {q} = q
 
-function Base.:(==)(m::T, n::T) where {T<:AbstractGL₂}
+function Base.:(==)(m::T, n::T) where {T <: AbstractGL₂}
     m = normalform!(m)
     n = normalform!(n)
     return ints(m) == ints(n)
 end
 
-function Base.hash(m::T, h::UInt) where {q,T<:AbstractGL₂{q}}
+function Base.hash(m::T, h::UInt) where {q, T <: AbstractGL₂{q}}
     m = normalform!(m)
     a, c, b, d = ints(m)
     val = d + q * (b + q * (c + q * a)) # q-adic expression of m
     return hash(T, hash(val, h))
 end
 
-function Base.:(*)(m::T, n::T) where {T<:AbstractGL₂}
+function Base.:(*)(m::T, n::T) where {T <: AbstractGL₂}
     a, c, b, d = ints(m)
     A, C, B, D = ints(n)
     return T(a * A + b * C, c * A + d * C, a * B + b * D, c * B + d * D)
 end
 
-function mul!(x::Number, m::T) where {T<:AbstractGL₂}
+function mul!(x::Number, m::T) where {T <: AbstractGL₂}
     m[1] = x * int(m[1])
     m[2] = x * int(m[2])
     m[3] = x * int(m[3])
@@ -62,14 +62,12 @@ function mul!(x::Number, m::T) where {T<:AbstractGL₂}
     return m
 end
 
-LinearAlgebra.det(m::AbstractGL₂{q}) where {q} =
-    ((a, c, b, d) = ints(m); GF{q}(a * d - c * b))
+LinearAlgebra.det(m::AbstractGL₂{q}) where {q} = ((a, c, b, d) = ints(m); GF{q}(a * d - c * b))
 
-function Base.inv(m::T) where {q,T<:AbstractGL₂{q}}
+function Base.inv(m::T) where {q, T <: AbstractGL₂{q}}
     a, c, b, d = ints(m)
     p = a * d - b * c
     p¯¹ = invmod(p, q)
-
     return T(p¯¹ * d, -p¯¹ * c + q, -p¯¹ * b + q, p¯¹ * a)
 end
 
@@ -99,7 +97,7 @@ where `w` ranges over the Weyl group. In the case of `GL₂` we can write
 where `D` is the subgroup of diagonal matrices, `U` of unipotent ones
 (thus `DU = B`) and `w² = -Id₂`.
 """
-struct Bruhat{T<:AbstractGL₂}
+struct Bruhat{T <: AbstractGL₂}
     matrix::T
 end
 
@@ -251,13 +249,11 @@ function normalform!(m::PSL₂{q}) where {q}
     end
 
     elt = ifelse(iszero(m[1]), m[2], m[1])
-
     if xinv * elt > div(q - 1, 2)
         xinv = q - xinv
     end
 
     m = mul!(xinv, m)
-
     return m
 end
 

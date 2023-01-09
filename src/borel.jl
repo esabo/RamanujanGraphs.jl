@@ -1,4 +1,4 @@
-struct Borel{T<:AbstractGL₂{q} where {q}} end
+struct Borel{T <: AbstractGL₂{q} where {q}} end
 
 Borel(x::AbstractGL₂) = Borel{typeof(x)}()
 Borel(::Type{T}) where {T} = Borel{T}()

@@ -1,14 +1,10 @@
-function generate_balls(
-    S::AbstractVector{T},
-    Id::T = one(T);
-    radius = 2,
-) where {T}
+function generate_balls(S::AbstractVector{T}, Id::T=one(T); radius::Integer=2) where {T}
     sizes = Int[]
     B = [Id]
     B_Set = Set([Id])
     new_elts = T[]
 
-    for i = 1:radius
+    for i in 1:radius
         resize!(new_elts, 0)
         for (g, h) in Base.product(B, S)
             elt = g * h
@@ -18,8 +14,7 @@ function generate_balls(
         end
 
         if length(new_elts) == 0
-            @info "Given radius = $radius, but $T already saturated at" radius =
-                i - 1 size = sizes[end]
+            @info "Given radius = $radius, but $T already saturated at" radius = i - 1 size = sizes[end]
             break
         end
         B = append!(B, new_elts)
@@ -39,22 +34,18 @@ function reduced_generating_set(S::AbstractVector)
     return collect(rS)
 end
 
-function cayley_graph(S::AbstractVector{T}, radius::Integer = 10) where {T}
+function cayley_graph(S::AbstractVector{T}, radius::Integer=10) where {T}
     @assert all((!isone).(S))
     rS = reduced_generating_set(S)
     S = unique([rS; inv.(rS)])
-
-    verts, sizes = generate_balls(S, radius = radius)
-
+    verts, _ = generate_balls(S, radius=radius)
     cayley = SimpleGraph(length(verts))
     vlabels = Dict(g => idx for (idx, g) in enumerate(verts))
-
-    elabels = Dict{Tuple{Int,Int},T}()
-
+    elabels = Dict{Tuple{Int, Int}, T}()
     for g in verts
         for s in rS # rS is reduced so that the graph is simple
             src = vlabels[g]
-            dst = vlabels[g*s] # assuming it exists
+            dst = vlabels[g * s] # assuming it exists
             add_edge!(cayley, src, dst)
             elabels[(src, dst)] = s
         end
@@ -62,7 +53,6 @@ function cayley_graph(S::AbstractVector{T}, radius::Integer = 10) where {T}
 
     all(isequal(length(S)), Graphs.degree(cayley)) ||
         @warn( "The degree is not constant = $(length(S)). A truncated part of the graph is returned.")
-
     return cayley, verts, vlabels, elabels
 end
 
@@ -70,20 +60,18 @@ function cayley_graph(order::Integer, S::AbstractVector{T}) where {T}
     @assert all((!isone).(S))
     @assert all(inv(s) in S for s in S)
 
-    sizes = Int[]
+    # sizes = Int[]
     cayley = SimpleGraph(1)
     verts = [one(T)]
     vlabels = Dict(one(T) => 1)
-    elabels = Dict{Tuple{Int,Int},T}()
-
+    elabels = Dict{Tuple{Int, Int}, T}()
     new_elts = Vector{T}(undef, length(S))
     nverts = 1
 
     for g in verts
-        for i = 1:length(S)
+        for i in 1:length(S)
             new_elts[i] = g * S[i]
         end
-
         for (s, elt) in zip(S, new_elts)
             if !haskey(vlabels, elt)
                 add_vertex!(cayley)
@@ -98,9 +86,7 @@ function cayley_graph(order::Integer, S::AbstractVector{T}) where {T}
         nverts == order && break
     end
 
-    verts_missing_edges =
-        findall(!isequal(length(S)), Graphs.degree(cayley))
-
+    verts_missing_edges = findall(!isequal(length(S)), Graphs.degree(cayley))
     for v in verts_missing_edges
         seen_edges = T[]
         for n in neighbors(cayley, v)
@@ -112,15 +98,13 @@ function cayley_graph(order::Integer, S::AbstractVector{T}) where {T}
         end
 
         K = setdiff(S, seen_edges)
-
         g = verts[v]
         src = vlabels[g]
         for s in K
-            dst = vlabels[g*s]
+            dst = vlabels[g * s]
             add_edge!(cayley, src, dst)
             elabels[(src, dst)] = s
         end
     end
-
     return cayley, verts, vlabels, elabels
 end
